@@ -2,9 +2,9 @@
   "name": "ebook-lib",
   "version": "1.0.0",
   "description": "This is a ebook api project using NodeJs, ExpressJs and MongoDB.",
-  "main": "server.js",
+  "main": "server.ts",
   "scripts": {
-    "dev": "nodemon src/server.ts"
+    "dev": "nodemon server.ts"
   },
   "keywords": [
     "backend",
