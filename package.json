@@ -1,0 +1,25 @@
+{
+  "name": "ebook-lib",
+  "version": "1.0.0",
+  "description": "This is a ebook api project using NodeJs, ExpressJs and MongoDB.",
+  "main": "server.js",
+  "scripts": {
+    "dev": "nodemon src/server.ts"
+  },
+  "keywords": [
+    "backend",
+    "restapi",
+    "expressjs",
+    "nodejs",
+    "mongodb",
+    "webdevelopment"
+  ],
+  "author": "Prem Sagar Gupta <premsagarg23@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "nodemon": "^3.1.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.6.3"
+  }
+}
