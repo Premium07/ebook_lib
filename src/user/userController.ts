@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import createHttpError from "http-errors";
+import userModal from "./userModal";
 
 const registerUser = async (
   req: Request,
@@ -11,8 +12,16 @@ const registerUser = async (
   if (!username || !email || !password) {
     const error = createHttpError(400, "All fields are required");
     return next(error);
+  }
+  // Database call
+  const user = await userModal.findOne({ email });
+
+  if (user) {
+    const error = createHttpError(400, `User already exits with this email`);
+    return next(error);
 
     // process
+    
   }
   res.json({ messgae: "user registered" });
 };
