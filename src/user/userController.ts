@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import createHttpError from "http-errors";
 import userModal from "./userModal";
+import bcrypt from "bcrypt";
 
 const registerUser = async (
   req: Request,
@@ -19,10 +20,14 @@ const registerUser = async (
   if (user) {
     const error = createHttpError(400, `User already exits with this email`);
     return next(error);
-
-    // process
-    
   }
+
+  // hash password
+  const hashedPassword = await bcrypt.hash(password, 10);
+  
+
+  // process
+
   res.json({ messgae: "user registered" });
 };
 
