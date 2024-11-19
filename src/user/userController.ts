@@ -4,6 +4,7 @@ import userModal from "./userModal";
 import bcrypt from "bcrypt";
 import { sign } from "jsonwebtoken";
 import { config } from "../config/config";
+import { User } from "./userTypes";
 
 const registerUser = async (
   req: Request,
@@ -17,27 +18,41 @@ const registerUser = async (
     return next(error);
   }
   // Database call
-  const user = await userModal.findOne({ email });
-
-  if (user) {
-    const error = createHttpError(400, `User already exits with this email`);
-    return next(error);
+  try {
+    const user = await userModal.findOne({ email });
+    if (user) {
+      const error = createHttpError(400, `User already exits with this email`);
+      return next(error);
+    }
+  } catch (error) {
+    return next(createHttpError(500, "Error while getting user"));
   }
 
   // hash password
   const hashedPassword = await bcrypt.hash(password, 10);
-  const newUser = await userModal.create({
-    username,
-    email,
-    password: hashedPassword,
-  });
 
-  // token generation with JWT
-  const token = sign({ sub: newUser._id }, config.jwtSecret as string, {
-    expiresIn: "7d",
-  });
+  let newUser: User;
+  try {
+    newUser = await userModal.create({
+      username,
+      email,
+      password: hashedPassword,
+    });
+  } catch (error) {
+    return next(createHttpError(500, "Error while creating user."));
+  }
 
-  res.json({ accessToken: token });
+  try {
+    // token generation with JWT
+    const token = sign({ sub: newUser._id }, config.jwtSecret as string, {
+      expiresIn: "7d",
+    });
+
+    // response
+    res.json({ accessToken: token });
+  } catch (error) {
+    return next(createHttpError(500, "Error while signing JWT token"));
+  }
 };
 
 export { registerUser };
