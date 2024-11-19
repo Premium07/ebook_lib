@@ -4,8 +4,11 @@ import userRouter from "./user/userRouter";
 
 const app = express();
 
-// Routes
+// middlewares
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
+// Routes
 app.get("/", (req, res, next) => {
   res.json({ message: "Hello, this is ebook lib API" });
 });
