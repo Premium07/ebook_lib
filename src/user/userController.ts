@@ -2,6 +2,8 @@ import { NextFunction, Request, Response } from "express";
 import createHttpError from "http-errors";
 import userModal from "./userModal";
 import bcrypt from "bcrypt";
+import { sign } from "jsonwebtoken";
+import { config } from "../config/config";
 
 const registerUser = async (
   req: Request,
@@ -24,11 +26,18 @@ const registerUser = async (
 
   // hash password
   const hashedPassword = await bcrypt.hash(password, 10);
-  
+  const newUser = await userModal.create({
+    username,
+    email,
+    password: hashedPassword,
+  });
 
-  // process
+  // token generation with JWT
+  const token = sign({ sub: newUser._id }, config.jwtSecret as string, {
+    expiresIn: "7d",
+  });
 
-  res.json({ messgae: "user registered" });
+  res.json({ accessToken: token });
 };
 
 export { registerUser };
