@@ -49,10 +49,38 @@ const registerUser = async (
     });
 
     // response
-    res.json({ accessToken: token });
+    res.status(201).json({ accessToken: token });
   } catch (error) {
     return next(createHttpError(500, "Error while signing JWT token"));
   }
 };
 
-export { registerUser };
+const loginUser = async (req: Request, res: Response, next: NextFunction) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return next(createHttpError(400, "All fields are required"));
+  }
+
+  try {
+    const user = await userModal.findOne({ email });
+
+    if (!user) {
+      return next(createHttpError(404, "User not found."));
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+
+    if (!isMatch) return next(createHttpError(400, "Invalid credentials"));
+
+    const token = sign({ sub: user._id }, config.jwtSecret as string, {
+      expiresIn: "7d",
+    });
+
+    res.json({ accessToken: token });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+export { registerUser, loginUser };
