@@ -66,4 +66,96 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
   }
 };
 
-export { createBook };
+const updateBook = async (req: Request, res: Response, next: NextFunction) => {
+  try {
+    const { title, description, genre } = req.body;
+
+    const bookId = req.params.bookId;
+
+    const book = await bookModal.findOne({ _id: bookId });
+
+    // find book
+    if (!book) {
+      return next(createHttpError(404, "Book not found."));
+    }
+
+    // check access
+
+    const _req = req as AuthRequest;
+    if (book.author.toString() !== _req.userId) {
+      return next(createHttpError(403, "Not authorized to do."));
+    }
+
+    // check if image field is exists.
+
+    const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+    let completeCoverImage = "";
+    try {
+      if (files.coverImage) {
+        const filename = files.coverImage[0].filename;
+        const coverMimeType = files.coverImage[0].mimetype.split("/").at(-1);
+
+        // send files to cloudinary
+
+        const filePath = path.resolve(
+          __dirname,
+          "../../public/data/uploads/" + filename
+        );
+
+        completeCoverImage = filename;
+        const uploadResult = await cloudinary.uploader.upload(filePath, {
+          filename_override: completeCoverImage,
+          folder: "book-covers",
+          format: coverMimeType,
+        });
+
+        completeCoverImage = uploadResult.secure_url;
+        await fs.promises.unlink(filePath);
+      }
+    } catch (error) {
+      return next(createHttpError(500, "Error uploading cover image."));
+    }
+
+    // check if file field is exists
+    let completeFileName = "";
+    if (files.file) {
+      const bookFilePath = path.resolve(
+        __dirname,
+        "../../public/data/uploads/" + files.file[0].filename
+      );
+
+      const bookFileName = files.file[0].filename;
+      completeFileName = bookFileName;
+
+      const uploadResultPdf = await cloudinary.uploader.upload(bookFilePath, {
+        resource_type: "raw",
+        filename_override: completeFileName,
+        folder: "book-covers",
+        format: "pdf",
+      });
+
+      completeFileName = uploadResultPdf.secure_url;
+      await fs.promises.unlink(bookFilePath);
+    }
+
+    const updateBook = await bookModal.findOneAndUpdate(
+      {
+        _id: bookId,
+      },
+      {
+        title,
+        genre,
+        description,
+        coverImage: completeCoverImage ? completeCoverImage : book.coverImage,
+        file: completeFileName ? completeFileName : book.file,
+      },
+      { new: true }
+    );
+
+    res.json(updateBook);
+  } catch (error) {
+    return next(createHttpError(403, "Not authorized to perform this action."));
+  }
+};
+
+export { createBook, updateBook };
