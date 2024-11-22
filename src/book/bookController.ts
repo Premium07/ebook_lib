@@ -188,7 +188,11 @@ const singleBook = async (
   }
 };
 
-const deleteBook = async (req: Request, res: Response, next: NextFunction) => {
+const deleteBook = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
   const bookId = req.params.bookId;
 
   try {
@@ -223,7 +227,7 @@ const deleteBook = async (req: Request, res: Response, next: NextFunction) => {
 
       await bookModal.deleteOne({ _id: bookId });
 
-      return res.sendStatus(204);
+      res.sendStatus(204);
     } catch (error) {
       return next(createHttpError(500, "Error while excecuting operation."));
     }
