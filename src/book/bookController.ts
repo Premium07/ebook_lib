@@ -11,6 +11,15 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
 
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
+    // Add null checks before accessing files
+    if (!files.coverImage || files.coverImage.length === 0) {
+      return next(createHttpError(400, "Cover image is required"));
+    }
+  
+    if (!files.file || files.file.length === 0) {
+      return next(createHttpError(400, "Book file is required"));
+    }
+
   const coverImageMimeType = files.coverImage[0].mimetype.split("/").at(-1);
   const fileName = files.coverImage[0].filename;
   const filePath = path.resolve(
