@@ -11,14 +11,14 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
 
   const files = req.files as { [fieldname: string]: Express.Multer.File[] };
 
-    // Add null checks before accessing files
-    if (!files.coverImage || files.coverImage.length === 0) {
-      return next(createHttpError(400, "Cover image is required"));
-    }
-  
-    if (!files.file || files.file.length === 0) {
-      return next(createHttpError(400, "Book file is required"));
-    }
+  // Add null checks before accessing files
+  if (!files.coverImage || files.coverImage.length === 0) {
+    return next(createHttpError(400, "Cover image is required"));
+  }
+
+  if (!files.file || files.file.length === 0) {
+    return next(createHttpError(400, "Book file is required"));
+  }
 
   const coverImageMimeType = files.coverImage[0].mimetype.split("/").at(-1);
   const fileName = files.coverImage[0].filename;
@@ -166,6 +166,105 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
     return next(createHttpError(403, "Not authorized to perform this action."));
   }
 };
+
+// const updateBook = async (req: Request, res: Response, next: NextFunction) => {
+//   try {
+//     const { title, description, genre } = req.body;
+//     const bookId = req.params.bookId;
+
+//     // Find the book by ID
+//     const book = await bookModal.findOne({ _id: bookId });
+//     if (!book) {
+//       return next(createHttpError(404, "Book not found."));
+//     }
+
+//     // Check access authorization
+//     const _req = req as AuthRequest;
+//     if (book.author.toString() !== _req.userId) {
+//       return next(createHttpError(403, "Not authorized to update this book."));
+//     }
+
+//     // Handle file uploads
+//     const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+
+//     let updatedCoverImage = book.coverImage;
+//     let updatedFile = book.file;
+
+//     // Update cover image if provided
+//     if (files?.coverImage?.[0]) {
+//       const coverFile = files.coverImage[0];
+//       const coverMimeType = coverFile.mimetype.split("/").pop();
+//       const coverFilePath = path.resolve(
+//         __dirname,
+//         "../../public/data/uploads",
+//         coverFile.filename
+//       );
+
+//       try {
+//         const uploadResult = await cloudinary.uploader.upload(coverFilePath, {
+//           filename_override: coverFile.filename,
+//           folder: "book-covers",
+//           format: coverMimeType,
+//         });
+
+//         updatedCoverImage = uploadResult.secure_url;
+
+//         // Delete temporary file
+//         await fs.promises.unlink(coverFilePath);
+//       } catch (error) {
+//         console.error("Error uploading cover image:", error);
+//         return next(createHttpError(500, "Error uploading cover image."));
+//       }
+//     }
+
+//     // Update book file if provided
+//     if (files?.file?.[0]) {
+//       const bookFile = files.file[0];
+//       const bookFilePath = path.resolve(
+//         __dirname,
+//         "../../public/data/uploads",
+//         bookFile.filename
+//       );
+
+//       try {
+//         const uploadResult = await cloudinary.uploader.upload(bookFilePath, {
+//           resource_type: "raw",
+//           filename_override: bookFile.filename,
+//           folder: "book-pdfs",
+//           format: "pdf",
+//         });
+
+//         updatedFile = uploadResult.secure_url;
+
+//         // Delete temporary file
+//         await fs.promises.unlink(bookFilePath);
+//       } catch (error) {
+//         console.error("Error uploading book file:", error);
+//         return next(createHttpError(500, "Error uploading book file."));
+//       }
+//     }
+
+//     // Update the book record in the database
+//     const updatedBook = await bookModal.findByIdAndUpdate(
+//       bookId,
+//       {
+//         title,
+//         genre,
+//         description,
+//         coverImage: updatedCoverImage,
+//         file: updatedFile,
+//       },
+//       { new: true }
+//     );
+
+//     res.json(updatedBook);
+//   } catch (error) {
+//     console.error("Error updating book:", error);
+//     return next(
+//       createHttpError(500, "An error occurred while updating the book.")
+//     );
+//   }
+// };
 
 const bookList = async (req: Request, res: Response, next: NextFunction) => {
   try {
