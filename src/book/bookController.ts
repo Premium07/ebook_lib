@@ -284,7 +284,9 @@ const singleBook = async (
 ): Promise<void> => {
   const bookId = req.params.bookId;
   try {
-    const book = await bookModal.findOne({ _id: bookId });
+    const book = await bookModal
+      .findOne({ _id: bookId })
+      .populate("author", "name");
 
     if (!book) {
       return next(createHttpError(404, "Book not found"));
